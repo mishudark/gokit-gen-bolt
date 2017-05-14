@@ -8,12 +8,12 @@ import (
 
 // ObjID only contains an ID
 type ObjID struct {
-	ID int `json:"id"`
+	ID  int  `json:"id"`
 }
 
 // ObjRequest uses ID's for external entitites
 type ObjRequest struct {
-	ID  int  `json:"id"`
+	{{.TypeContent}}
 }
 
 // Endpoints availables

@@ -10,5 +10,7 @@ pkg_client: moon
 components:
 - package: color
   struct_type: Color
+  source_struct: types.go
 - package: manufacturer
   struct_type: Manufacturer
+  source_struct: types.go

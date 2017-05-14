@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"flag"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -17,6 +20,8 @@ type params struct {
 	Package       string
 	PkgClient     string
 	Type          string
+	TypeContent   template.HTML
+	SourceStruct  string
 	OrgName       string
 	RepoName      string
 	TemplatesPath string
@@ -32,8 +37,9 @@ type config struct {
 	Common     []string `yaml:"common"`
 	PkgClient  string   `yaml:"pkg_client"`
 	Components []struct {
-		Package string `yaml:"package"`
-		Type    string `yaml:"struct_type"`
+		Package      string `yaml:"package"`
+		Type         string `yaml:"struct_type"`
+		SourceStruct string `yaml:"source_struct"`
 	} `yaml:"components"`
 }
 
@@ -65,12 +71,15 @@ func main() {
 			PkgClient:     conf.PkgClient,
 			Package:       item.Package,
 			Type:          item.Type,
+			SourceStruct:  item.SourceStruct,
 			OrgName:       conf.Github.Org,
 			RepoName:      conf.Github.Repo,
 			TemplatesPath: conf.TemplatesPath,
 			Common:        conf.Common,
 		}
 
+		p.TypeContent = template.HTML(extrac_type(p.SourceStruct, p.Type))
+		log.Printf("%s", p.TypeContent)
 		walk(p)
 	}
 }
@@ -142,4 +151,39 @@ func walk(p params) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func extrac_type(path string, typ string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		log.Println("error reading type source:", err)
+		return ""
+	}
+
+	defer f.Close() // nolint: errcheck
+
+	var buffer bytes.Buffer
+	typFound := false
+	scanner := bufio.NewScanner(f)
+
+	for scanner.Scan() {
+		text := scanner.Text()
+		trimed := strings.TrimSpace(text)
+
+		if trimed == fmt.Sprintf("type %s struct {", typ) {
+			typFound = true
+			continue
+		}
+
+		if trimed == "}" && typFound {
+			break
+		}
+
+		if typFound {
+			buffer.WriteString(text + "\n")
+		}
+
+	}
+
+	return buffer.String()
 }
