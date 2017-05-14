@@ -4,39 +4,41 @@ import (
 	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api"
 	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api/{{.Package}}"
 	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/bolt"
+	"github.com/dherby/lipu-api/pkg/{{.PkgClient}}"
 	"github.com/golang/glog"
 	"github.com/jinzhu/copier"
 )
 
 type {{.Package}}Service struct {
 	s *bolt.StoreService
+	c *{{.PkgClient}}.Client
 }
 
 // Create a new {{.Type}}
-func (v *{{.Package}}Service) Create(item {{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
-	id, err := v.s.Create(&item)
+func ({{.PackageAbbr}} *{{.Package}}Service) Create(item {{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
+	id, err := {{.PackageAbbr}}.s.Create(&item)
 	return {{.Package}}.ObjID{ID: id}, err
 }
 
 // Update existent {{.Type}}
-func (v *{{.Package}}Service) Update(item {{.Package}}.ObjRequest) ({{.Package}}.Result, error) {
-	err := v.s.Update(item, item.ID)
+func ({{.PackageAbbr}} *{{.Package}}Service) Update(item {{.Package}}.ObjRequest) ({{.Package}}.Result, error) {
+	err := {{.PackageAbbr}}.s.Update(item, item.ID)
 	glog.Errorln(err)
 	return {{.Package}}.Result{Success: err == nil}, err
 }
 
 // Delete existent {{.Package}}
-func (v *{{.Package}}Service) Delete(id int) ({{.Package}}.Result, error) {
-	err := v.s.Delete(id)
+func ({{.PackageAbbr}} *{{.Package}}Service) Delete(id int) ({{.Package}}.Result, error) {
+	err := {{.PackageAbbr}}.s.Delete(id)
 	return {{.Package}}.Result{Success: err == nil}, err
 }
 
 // Retreive a {{.Type}}
-func (v *{{.Package}}Service) Retreive(id int) (api.{{.Type}}, error) {
+func ({{.PackageAbbr}} *{{.Package}}Service) Retreive(id int) (api.{{.Type}}, error) {
 	var container {{.Package}}.ObjRequest
 	var resp api.{{.Type}}
 
-	err := v.s.Retreive(id, &container)
+	err := {{.PackageAbbr}}.s.Retreive(id, &container)
 	if err != nil {
 		return resp, err
 	}
@@ -46,11 +48,11 @@ func (v *{{.Package}}Service) Retreive(id int) (api.{{.Type}}, error) {
 }
 
 // List {{.Type}}s
-func (v *{{.Package}}Service) List() ([]api.{{.Type}}, error) {
+func ({{.PackageAbbr}} *{{.Package}}Service) List() ([]api.{{.Type}}, error) {
 	container := []{{.Package}}.ObjRequest{}
 	resp := []api.{{.Type}}{}
 
-	err := v.s.List(&container)
+	err := {{.PackageAbbr}}.s.List(&container)
 	if err != nil {
 		return resp, err
 	}
@@ -60,8 +62,9 @@ func (v *{{.Package}}Service) List() ([]api.{{.Type}}, error) {
 }
 
 // New{{.Type}}sService returns an interface for CRUD {{.Type}}
-func New{{.Type}}sService(c *bolt.Client) {{.Package}}.Service {
+func New{{.Type}}sService(c *{{.PkgClient}}.Client, b *bolt.Client) {{.Package}}.Service {
 	return &{{.Package}}Service{
-		bolt.NewStoreService(c, "{{.Package}}"),
+		s: bolt.NewStoreService(c, "{{.Package}}"),
+		c: c,
 	}
 }

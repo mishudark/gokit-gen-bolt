@@ -13,7 +13,9 @@ import (
 )
 
 type params struct {
+	PackageAbbr   string
 	Package       string
+	PkgClient     string
 	Type          string
 	OrgName       string
 	RepoName      string
@@ -28,6 +30,7 @@ type config struct {
 		Repo string `yaml:"repo"`
 	} `yaml:"github"`
 	Common     []string `yaml:"common"`
+	PkgClient  string   `yaml:"pkg_client"`
 	Components []struct {
 		Package string `yaml:"package"`
 		Type    string `yaml:"struct_type"`
@@ -51,7 +54,15 @@ func main() {
 	}
 
 	for _, item := range conf.Components {
+		letters := []rune(item.Package)
+		abbr := ""
+		if len(letters) > 0 {
+			abbr = string(letters[0])
+		}
+
 		p := params{
+			PackageAbbr:   abbr,
+			PkgClient:     conf.PkgClient,
 			Package:       item.Package,
 			Type:          item.Type,
 			OrgName:       conf.Github.Org,

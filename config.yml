@@ -5,6 +5,7 @@ github:
   repo: api-autogen
 
 common: [bolt]
+pkg_client: moon
 
 components:
 - package: color
