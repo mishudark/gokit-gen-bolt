@@ -13,11 +13,12 @@ import (
 )
 
 type params struct {
-	Package       string `yaml:"package"`
-	Type          string `yaml:"struct_type"`
-	OrgName       string `yaml:"org_name"`
-	RepoName      string `yaml:"repo_name"`
-	TemplatesPath string `yaml:"templates_path"`
+	Package       string
+	Type          string
+	OrgName       string
+	RepoName      string
+	TemplatesPath string
+	Common        []string
 }
 
 type config struct {
@@ -26,6 +27,7 @@ type config struct {
 		Org  string `yaml:"org"`
 		Repo string `yaml:"repo"`
 	} `yaml:"github"`
+	Common     []string `yaml:"common"`
 	Components []struct {
 		Package string `yaml:"package"`
 		Type    string `yaml:"struct_type"`
@@ -55,6 +57,7 @@ func main() {
 			OrgName:       conf.Github.Org,
 			RepoName:      conf.Github.Repo,
 			TemplatesPath: conf.TemplatesPath,
+			Common:        conf.Common,
 		}
 
 		walk(p)
@@ -63,6 +66,8 @@ func main() {
 
 func walk(p params) {
 	outDir := p.Package
+	commonPrefix := ""
+	commonPath := ""
 
 	err := filepath.Walk(p.TemplatesPath, func(path string, info os.FileInfo, err error) error {
 		// replace original template path with new path
@@ -72,15 +77,40 @@ func walk(p params) {
 		// replace __package__ with package name
 		newPath = strings.Replace(newPath, "__package__", p.Package, 1)
 
-		log.Println(newPath)
-
 		if info.IsDir() {
+			for _, item := range p.Common {
+				// check if is a common component, creates the dir in the root
+				// FIXME: improve checking if its a real dir
+				// currently match ie:
+				// item = 'bolt'
+				// newPath = /some/boltBar
+				// clearly this is an error
+				if strings.Contains(newPath, item) {
+					commonPrefix = strings.Replace(newPath, item, "", 1) + item
+					commonPath = item
+					newPath = item
+
+					break
+				}
+
+				commonPrefix = ""
+				commonPath = ""
+			}
+
 			if err := os.Mkdir(newPath, 0755); err != nil {
-				log.Fatalln(err)
+				log.Println(err)
 			}
 
 			return nil
 		}
+
+		// replace prefix for common components
+		if strings.Contains(newPath, commonPrefix) {
+			newPath = strings.Replace(newPath, commonPrefix, "", 1)
+			newPath = commonPath + newPath
+		}
+
+		log.Println(newPath)
 
 		f, err := os.Create(newPath)
 		if err != nil {

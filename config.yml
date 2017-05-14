@@ -4,6 +4,8 @@ github:
   org: mishudark
   repo: api-autogen
 
+common: [bolt]
+
 components:
 - package: color
   struct_type: Color

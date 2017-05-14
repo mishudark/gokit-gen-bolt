@@ -172,7 +172,7 @@ func TestPostMethod(t *testing.T) {
 		{
 			name:       "Bad request",
 			method:     "POST",
-			path:       "/api/v1/{{.Package}}s/1",
+			path:       "/api/v1/{{.Package}}s",
 			statusCode: 400,
 			input:      nil,
 			service: func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
@@ -181,7 +181,7 @@ func TestPostMethod(t *testing.T) {
 		}, {
 			name:       "Not found",
 			method:     "POST",
-			path:       "/api/v1/{{.Package}}s/1",
+			path:       "/api/v1/{{.Package}}s",
 			statusCode: 404,
 			input:      bytes.NewBufferString(`{"plates":"BXGA"}`),
 			service: func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
@@ -190,7 +190,7 @@ func TestPostMethod(t *testing.T) {
 		}, {
 			name:       "Found",
 			method:     "POST",
-			path:       "/api/v1/{{.Package}}s/1",
+			path:       "/api/v1/{{.Package}}s",
 			statusCode: 200,
 			input:      bytes.NewBufferString(`{"plates":"BXGA"}`),
 			service: func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {

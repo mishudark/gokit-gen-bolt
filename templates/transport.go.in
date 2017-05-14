@@ -80,7 +80,7 @@ func MakeHTTPHandler(e Endpoints) http.Handler {
 		opts,
 	))
 
-	r.Path("/api/v1/").Methods("POST").Handler(httptransport.NewServer(
+	r.Path("/api/v1/{{.Package}}s").Methods("POST").Handler(httptransport.NewServer(
 		e.Create,
 		decode{{.Type}}Request,
 		httptransport.EncodeJSONResponse,
