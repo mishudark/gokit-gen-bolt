@@ -12,10 +12,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type config struct {
-	File string
-}
-
 type params struct {
 	Package       string `yaml:"package"`
 	Type          string `yaml:"struct_type"`
@@ -24,23 +20,45 @@ type params struct {
 	TemplatesPath string `yaml:"templates_path"`
 }
 
+type config struct {
+	TemplatesPath string `yaml:"templates_path"`
+	Github        struct {
+		Org  string `yaml:"org"`
+		Repo string `yaml:"repo"`
+	} `yaml:"github"`
+	Components []struct {
+		Package string `yaml:"package"`
+		Type    string `yaml:"struct_type"`
+	} `yaml:"components"`
+}
+
 func main() {
-	var c config
-	flag.StringVar(&c.File, "f", "", "the conf.yaml path")
+	var fileConfig string
+	flag.StringVar(&fileConfig, "f", "", "the conf.yaml path")
 	flag.Parse()
 
-	blob, err := ioutil.ReadFile(c.File)
+	blob, err := ioutil.ReadFile(fileConfig)
 	if err != nil {
 		log.Fatalln("can't find config file:", err)
 	}
 
-	var p params
-	err = yaml.Unmarshal(blob, &p)
+	var conf config
+	err = yaml.Unmarshal(blob, &conf)
 	if err != nil {
 		log.Fatalln("config yaml error:", err)
 	}
 
-	walk(p)
+	for _, item := range conf.Components {
+		p := params{
+			Package:       item.Package,
+			Type:          item.Type,
+			OrgName:       conf.Github.Org,
+			RepoName:      conf.Github.Repo,
+			TemplatesPath: conf.TemplatesPath,
+		}
+
+		walk(p)
+	}
 }
 
 func walk(p params) {
@@ -51,6 +69,9 @@ func walk(p params) {
 		newPath := strings.Replace(path, p.TemplatesPath, outDir, 1)
 		// drop .in ext
 		newPath = strings.Replace(newPath, ".go.in", ".go", 1)
+		// replace __package__ with package name
+		newPath = strings.Replace(newPath, "__package__", p.Package, 1)
+
 		log.Println(newPath)
 
 		if info.IsDir() {

@@ -1,0 +1,67 @@
+package bolt
+
+import (
+	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api"
+	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api/{{.Package}}"
+	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/bolt"
+	"github.com/golang/glog"
+	"github.com/jinzhu/copier"
+)
+
+type {{.Package}}Service struct {
+	s *bolt.StoreService
+}
+
+// Create a new {{.Type}}
+func (v *{{.Package}}Service) Create(item {{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
+	id, err := v.s.Create(&item)
+	return {{.Package}}.ObjID{ID: id}, err
+}
+
+// Update existent {{.Type}}
+func (v *{{.Package}}Service) Update(item {{.Package}}.ObjRequest) ({{.Package}}.Result, error) {
+	err := v.s.Update(item, item.ID)
+	glog.Errorln(err)
+	return {{.Package}}.Result{Success: err == nil}, err
+}
+
+// Delete existent {{.Package}}
+func (v *{{.Package}}Service) Delete(id int) ({{.Package}}.Result, error) {
+	err := v.s.Delete(id)
+	return {{.Package}}.Result{Success: err == nil}, err
+}
+
+// Retreive a {{.Type}}
+func (v *{{.Package}}Service) Retreive(id int) (api.{{.Type}}, error) {
+	var container {{.Package}}.ObjRequest
+	var resp api.{{.Type}}
+
+	err := v.s.Retreive(id, &container)
+	if err != nil {
+		return resp, err
+	}
+
+	err = copier.Copy(&resp, &container)
+	return resp, err
+}
+
+// List {{.Type}}s
+func (v *{{.Package}}Service) List() ([]api.{{.Type}}, error) {
+	container := []{{.Package}}.ObjRequest{}
+	resp := []api.{{.Type}}{}
+
+	err := v.s.List(&container)
+	if err != nil {
+		return resp, err
+	}
+
+	err = copier.Copy(&resp, &container)
+	return resp, err
+}
+
+// New{{.Type}}sService returns an interface for CRUD {{.Type}}
+func New{{.Type}}sService(c *bolt.Client) {{.Package}}.Service {
+	return &{{.Package}}Service{
+		bolt.NewStoreService(c, "{{.Package}}"),
+	}
+}
