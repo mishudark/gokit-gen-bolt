@@ -1,0 +1,54 @@
+package mock
+
+import (
+	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api"
+	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api/{{.Package}}"
+)
+
+type {{.Type}}Service struct {
+	CreateFn   func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error)
+	UpdateFn   func({{.Package}}.ObjRequest) ({{.Package}}.Result, error)
+	DeleteFn   func(id int) ({{.Package}}.Result, error)
+	RetreiveFn func(id int) (api.{{.Type}}, error)
+	ListFn     func() ([]api.{{.Type}}, error)
+}
+
+func (v *{{.Type}}Service) Create(item {{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
+	return v.CreateFn(item)
+}
+
+func (v *{{.Type}}Service) Update(item {{.Package}}.ObjRequest) ({{.Package}}.Result, error) {
+	return v.UpdateFn(item)
+}
+
+func (v *{{.Type}}Service) Delete(id int) ({{.Package}}.Result, error) {
+	return v.DeleteFn(id)
+}
+
+func (v *{{.Type}}Service) Retreive(id int) (api.{{.Type}}, error) {
+	return v.RetreiveFn(id)
+}
+
+func (v *{{.Type}}Service) List() ([]api.{{.Type}}, error) {
+	return v.ListFn()
+}
+
+func NewService() *{{.Type}}Service {
+	return &{{.Type}}Service{
+		CreateFn: func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
+			return {{.Package}}.ObjID{}, nil
+		},
+		ListFn: func() ([]api.{{.Type}}, error) {
+			return []api.{{.Type}}{}, nil
+		},
+		RetreiveFn: func(id int) (api.{{.Type}}, error) {
+			return api.{{.Type}}{}, nil
+		},
+		UpdateFn: func({{.Package}}.ObjRequest) ({{.Package}}.Result, error) {
+			return {{.Package}}.Result{}, nil
+		},
+		DeleteFn: func(id int) ({{.Package}}.Result, error) {
+			return {{.Package}}.Result{}, nil
+		},
+	}
+}

@@ -1,0 +1,72 @@
+package {{.Package}}
+
+import (
+	"context"
+	"time"
+
+	"github.com/go-kit/kit/endpoint"
+)
+
+// ObjID only contains an ID
+type ObjID struct {
+	ID int `json:"id"`
+}
+
+// ObjRequest uses ID's for external entitites
+type ObjRequest struct {
+	ID  int  `json:"id"`
+}
+
+// Endpoints availables
+type Endpoints struct {
+	Update   endpoint.Endpoint
+	Delete   endpoint.Endpoint
+	Create   endpoint.Endpoint
+	Retreive endpoint.Endpoint
+	List     endpoint.Endpoint
+}
+
+// MakeEndpoints for healthcheck service
+func MakeEndpoints(s Service) Endpoints {
+	return Endpoints{
+		Update:   makeUpdateEndpoint(s),
+		Delete:   makeDeleteEndpoint(s),
+		Create:   makeCreateEndpoint(s),
+		Retreive: makeRetreiveEndpoint(s),
+		List:     makeListEndpoint(s),
+	}
+}
+
+func makeUpdateEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ObjRequest)
+		return s.Update(req)
+	}
+}
+
+func makeDeleteEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ObjID)
+		return s.Delete(req.ID)
+	}
+}
+
+func makeCreateEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ObjRequest)
+		return s.Create(req)
+	}
+}
+
+func makeRetreiveEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ObjID)
+		return s.Retreive(req.ID)
+	}
+}
+
+func makeListEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		return s.List()
+	}
+}

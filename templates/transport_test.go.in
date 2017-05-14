@@ -1,0 +1,222 @@
+package {{.Package}}_test
+
+import (
+	"bytes"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api"
+	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api/{{.Package}}"
+	"github.com/{{.OrgName}}/{{.RepoName}}/pkg/api/{{.Package}}/mock"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetMethod(t *testing.T) {
+	testCases := []struct {
+		name       string
+		method     string
+		path       string
+		statusCode int
+		input      io.Reader
+		service    func(id int) (api.{{.Type}}, error)
+	}{
+		{
+			name:       "Not found",
+			method:     "GET",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 404,
+			input:      nil,
+			service: func(id int) (api.{{.Type}}, error) {
+				return api.{{.Type}}{}, api.NewError("not found").SetStatusCode(404)
+			},
+		}, {
+			name:       "Found",
+			method:     "GET",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 200,
+			input:      nil,
+			service: func(id int) (api.{{.Type}}, error) {
+				return api.{{.Type}}{}, nil
+			},
+		},
+	}
+
+	service := mock.NewService()
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			service.RetreiveFn = tt.service
+			endpoints := {{.Package}}.MakeEndpoints(service)
+			handler := {{.Package}}.MakeHTTPHandler(endpoints)
+
+			req := newRequest(tt.method, tt.path, tt.input)
+			w := httptest.NewRecorder()
+			handler.ServeHTTP(w, req)
+			assert.Equal(t, tt.statusCode, w.Code, tt.name)
+		})
+	}
+}
+
+func TestPutMethod(t *testing.T) {
+	testCases := []struct {
+		name       string
+		method     string
+		path       string
+		statusCode int
+		input      io.Reader
+		service    func({{.Package}}.ObjRequest) ({{.Package}}.Result, error)
+	}{
+		{
+			name:       "Bad request",
+			method:     "PUT",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 400,
+			input:      nil,
+			service: func({{.Package}}.ObjRequest) ({{.Package}}.Result, error) {
+				return {{.Package}}.Result{}, nil
+			},
+		}, {
+			name:       "Not found",
+			method:     "PUT",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 404,
+			input:      bytes.NewBufferString(`{"plates":"BXGA"}`),
+			service: func({{.Package}}.ObjRequest) ({{.Package}}.Result, error) {
+				return {{.Package}}.Result{}, api.NewError("not found").SetStatusCode(404)
+			},
+		}, {
+			name:       "Found",
+			method:     "PUT",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 200,
+			input:      bytes.NewBufferString(`{"plates":"BXGA"}`),
+			service: func({{.Package}}.ObjRequest) ({{.Package}}.Result, error) {
+				return {{.Package}}.Result{true}, nil
+			},
+		},
+	}
+
+	service := mock.NewService()
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			service.UpdateFn = tt.service
+			endpoints := {{.Package}}.MakeEndpoints(service)
+			handler := {{.Package}}.MakeHTTPHandler(endpoints)
+
+			req := newRequest(tt.method, tt.path, tt.input)
+			w := httptest.NewRecorder()
+			handler.ServeHTTP(w, req)
+			assert.Equal(t, tt.statusCode, w.Code, tt.name)
+		})
+	}
+}
+
+func TestDeleteMethod(t *testing.T) {
+	testCases := []struct {
+		name       string
+		method     string
+		path       string
+		statusCode int
+		input      io.Reader
+		service    func(id int) ({{.Package}}.Result, error)
+	}{
+		{
+			name:       "Not found",
+			method:     "DELETE",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 404,
+			input:      bytes.NewBufferString(`{"plates":"BXGA"}`),
+			service: func(id int) ({{.Package}}.Result, error) {
+				return {{.Package}}.Result{}, api.NewError("not found").SetStatusCode(404)
+			},
+		}, {
+			name:       "Found",
+			method:     "DELETE",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 200,
+			input:      bytes.NewBufferString(`{"plates":"BXGA"}`),
+			service: func(id int) ({{.Package}}.Result, error) {
+				return {{.Package}}.Result{true}, nil
+			},
+		},
+	}
+
+	service := mock.NewService()
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			service.DeleteFn = tt.service
+			endpoints := {{.Package}}.MakeEndpoints(service)
+			handler := {{.Package}}.MakeHTTPHandler(endpoints)
+
+			req := newRequest(tt.method, tt.path, tt.input)
+			w := httptest.NewRecorder()
+			handler.ServeHTTP(w, req)
+			assert.Equal(t, tt.statusCode, w.Code, tt.name)
+		})
+	}
+}
+
+func TestPostMethod(t *testing.T) {
+	testCases := []struct {
+		name       string
+		method     string
+		path       string
+		statusCode int
+		input      io.Reader
+		service    func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error)
+	}{
+		{
+			name:       "Bad request",
+			method:     "POST",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 400,
+			input:      nil,
+			service: func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
+				return {{.Package}}.ObjID{}, nil
+			},
+		}, {
+			name:       "Not found",
+			method:     "POST",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 404,
+			input:      bytes.NewBufferString(`{"plates":"BXGA"}`),
+			service: func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
+				return {{.Package}}.ObjID{}, api.NewError("not found").SetStatusCode(404)
+			},
+		}, {
+			name:       "Found",
+			method:     "POST",
+			path:       "/api/v1/{{.Package}}s/1",
+			statusCode: 200,
+			input:      bytes.NewBufferString(`{"plates":"BXGA"}`),
+			service: func({{.Package}}.ObjRequest) ({{.Package}}.ObjID, error) {
+				return {{.Package}}.ObjID{1}, nil
+			},
+		},
+	}
+
+	service := mock.NewService()
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			service.CreateFn = tt.service
+			endpoints := {{.Package}}.MakeEndpoints(service)
+			handler := {{.Package}}.MakeHTTPHandler(endpoints)
+
+			req := newRequest(tt.method, tt.path, tt.input)
+			w := httptest.NewRecorder()
+			handler.ServeHTTP(w, req)
+			assert.Equal(t, tt.statusCode, w.Code, tt.name)
+		})
+	}
+}
+
+// newRwquest is used to generate the request for the various test cases
+func newRequest(method, urlStr string, body io.Reader) *http.Request {
+	req, _ := http.NewRequest(method, urlStr, body)
+	return req
+}

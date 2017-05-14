@@ -1,0 +1,17 @@
+package {{.Package}}
+
+import "github.com/{{.OrgName}}/{{.RepoName}}/pkg/api"
+
+// Result indicates when the operacion was successful
+type Result struct {
+	Success bool
+}
+
+// Service is a simple interface to store the response method
+type Service interface {
+	Create(ObjRequest) (ObjID, error)
+	Update(ObjRequest) (Result, error)
+	Delete(id int) (Result, error)
+	Retreive(id int) (api.{{.Type}}, error)
+	List() ([]api.{{.Type}}, error)
+}

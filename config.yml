@@ -1,0 +1,5 @@
+package: company
+struct_type: Company
+org_name: mishudark
+repo_name: api-autogen
+templates_path: templates
