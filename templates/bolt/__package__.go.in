@@ -64,7 +64,7 @@ func ({{.PackageAbbr}} *{{.Package}}Service) List() ([]api.{{.Type}}, error) {
 // New{{.Type}}sService returns an interface for CRUD {{.Type}}
 func New{{.Type}}sService(c *{{.PkgClient}}.Client, b *bolt.Client) {{.Package}}.Service {
 	return &{{.Package}}Service{
-		s: bolt.NewStoreService(c, "{{.Package}}"),
+		s: bolt.NewStoreService(b, "{{.Package}}"),
 		c: c,
 	}
 }
